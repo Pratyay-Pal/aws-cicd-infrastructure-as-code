@@ -44,6 +44,7 @@ Resources:
       BucketName: !Ref SourceArtifactBucket
       VersioningConfiguration:
         Status: Enabled
+    DeletionPolicy: Delete
 
   LambdaRole2Connect2S3:
     Type: AWS::IAM::Role
@@ -51,34 +52,35 @@ Resources:
       AssumeRolePolicyDocument:
         Version: '2012-10-17'
         Statement:
-        - Effect: Allow
-          Principal:
-            Service:
-            - lambda.amazonaws.com
-          Action:
-          - sts:AssumeRole
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
       Path: "/"
       Policies:
-      - PolicyName: root
-        PolicyDocument:
-          Version: '2012-10-17'
-          Statement:
-          - Effect: Allow
-            Action:
-            - "s3:*"
-            Resource: "*"
-          - Effect: Allow
-            Action:
-            - "logs:CreateLogGroup"
-            - "logs:CreateLogStream"
-            - "logs:PutLogEvents"
-            Resource: "*"
+        - PolicyName: root
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "s3:*"
+                Resource:
+                  - !Sub arn:aws:s3:::${SourceArtifactBucket}
+              - Effect: Allow
+                Action:
+                  - "logs:CreateLogGroup"
+                  - "logs:CreateLogStream"
+                  - "logs:PutLogEvents"
+                Resource: "*"
 
   Lambda2EmptyBucketBeforeDestroying:
     Type: "AWS::Lambda::Function"
     Properties:
       Runtime: "python3.12"
-      Timeout: 600
+      Timeout: 60
       Role: 
         Fn::GetAtt:
           - "LambdaRole2Connect2S3"
@@ -89,31 +91,45 @@ Resources:
           #!/usr/bin/env python
           import json
           import boto3
+          import cfnresponse
 
           s3 = boto3.client('s3')
           def lambda_handler(event, context):
-              bucket_name=${!Ref S3BucketToStoreCFN}
-              try:
-                  allObjs = s3.list_object_versions(Bucket=bucket_name)
-                  for objVer in allObjs.get('Versions', []):
-                      s3.delete_object(
-                          Bucket=bucket_name,
-                          Key=objVer['Key'],
-                          VersionId=objVer['VersionId']
-                      )                  
-                  for objDelMrkr in allObjs.get('DeleteMarkers', []):
-                      s3.delete_object(
-                          Bucket=bucket_name,
-                          Key=objDelMrkr['Key'],
-                          VersionId=objDelMrkr['VersionId']
-                      )
-              except Exception as e:
-                  print(e)
-                  
-              return {
-                  'statusCode': 200,
-                  'body': json.dumps('All objects deleted')
-              }
+            print("Event : "+str(event))
+            bucket_name=event['ResourceProperties']['bucket_name']
+            try:
+              if event['RequestType'] == 'Delete':                
+                allObjs = s3.list_object_versions(Bucket=bucket_name)
+                for objVer in allObjs.get('Versions', []):
+                    s3.delete_object(
+                        Bucket=bucket_name,
+                        Key=objVer['Key'],
+                        VersionId=objVer['VersionId']
+                    )                  
+                for objDelMrkr in allObjs.get('DeleteMarkers', []):
+                    s3.delete_object(
+                        Bucket=bucket_name,
+                        Key=objDelMrkr['Key'],
+                        VersionId=objDelMrkr['VersionId']
+                    )
+              response_data = {}
+              cfnresponse.send(event, context, cfnresponse.SUCCESS, response_data)
+            except Exception as e:
+                print(e)
+                response_data['Data'] = str(e)
+                cfnresponse.send(event, context, cfnresponse.FAILED, response_data)
+                
+            return {
+                'statusCode': 200,
+                'body': json.dumps('All objects deleted')
+            }
+  
+  LambdaCustomResource:
+    Type: Custom::LambdaCustomResource
+    Properties:
+      ServiceToken: !GetAtt Lambda2EmptyBucketBeforeDestroying.Arn
+      bucket_name: !Ref S3BucketToStoreCFN ###THIS IS NEEDED TO CREATE DEPENDENCY BETWEEN DELETION LAMBDA(Lambda2EmptyBucketBeforeDestroying) AND S3 BUCKET
+      ### IF THIS IS NOT PRESENT CFN WILL TRY TO DESTROY THE S3 BEFORE IT IS EMPTIED
 
   InfrastructureDeployment:
     Type: AWS::CodePipeline::Pipeline
