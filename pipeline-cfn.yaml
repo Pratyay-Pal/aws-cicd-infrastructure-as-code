@@ -45,6 +45,76 @@ Resources:
       VersioningConfiguration:
         Status: Enabled
 
+  LambdaRole2Connect2S3:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - lambda.amazonaws.com
+          Action:
+          - sts:AssumeRole
+      Path: "/"
+      Policies:
+      - PolicyName: root
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action:
+            - "s3:*"
+            Resource: "*"
+          - Effect: Allow
+            Action:
+            - "logs:CreateLogGroup"
+            - "logs:CreateLogStream"
+            - "logs:PutLogEvents"
+            Resource: "*"
+
+  Lambda2EmptyBucketBeforeDestroying:
+    Type: "AWS::Lambda::Function"
+    Properties:
+      Runtime: "python3.12"
+      Timeout: 600
+      Role: 
+        Fn::GetAtt:
+          - "LambdaRole2Connect2S3"
+          - "Arn"
+      Handler: "index.lambda_handler"
+      Code: 
+        ZipFile: |
+          #!/usr/bin/env python
+          import json
+          import boto3
+
+          s3 = boto3.client('s3')
+          def lambda_handler(event, context):
+              bucket_name=${!Ref S3BucketToStoreCFN}
+              try:
+                  allObjs = s3.list_object_versions(Bucket=bucket_name)
+                  for objVer in allObjs.get('Versions', []):
+                      s3.delete_object(
+                          Bucket=bucket_name,
+                          Key=objVer['Key'],
+                          VersionId=objVer['VersionId']
+                      )                  
+                  for objDelMrkr in allObjs.get('DeleteMarkers', []):
+                      s3.delete_object(
+                          Bucket=bucket_name,
+                          Key=objDelMrkr['Key'],
+                          VersionId=objDelMrkr['VersionId']
+                      )
+              except Exception as e:
+                  print(e)
+                  
+              return {
+                  'statusCode': 200,
+                  'body': json.dumps('All objects deleted')
+              }
+
   InfrastructureDeployment:
     Type: AWS::CodePipeline::Pipeline
     Properties:
