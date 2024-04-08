@@ -20,18 +20,11 @@ Parameters:
     Default: infrastructure-cfn.yaml
     Description: Infrastruture as code. Must be YAML/JSON.
 
-  #Make sure cloudformation.amazonaws.com and is present in Trusted entities for this Role.
   CFNRoleARN:
     Type: String
-    Default: arn:aws:iam::171321171015:role/AWS-CFN-AdminRole
-    Description: Role that Cloudformation assumes when creating resource on AWS.
+    Default: AWS-CFN-AdminRole
+    Description: Role that Cloudformation assumes when creating resources on AWS.
   
-  #Make sure codepipeline.amazonaws.com and is present in Trusted entities for this Role.
-  CodePipelineRoleARN:
-    Type: String
-    Default: arn:aws:iam::171321171015:role/AWS-CFN-AdminRole
-    Description: Role that Codepipeline assumes when creating resource on AWS.
-
   InfrastructureDeploymentStackName:
     Type: String
     Default: testInfra
@@ -60,7 +53,7 @@ Resources:
               - sts:AssumeRole
       Path: "/"
       Policies:
-        - PolicyName: root
+        - PolicyName: Lambda2S3
           PolicyDocument:
             Version: '2012-10-17'
             Statement:
@@ -75,6 +68,32 @@ Resources:
                   - "logs:CreateLogStream"
                   - "logs:PutLogEvents"
                 Resource: "*"
+
+  CFNRole2CreateResources:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Ref CFNRoleARN
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - cloudformation.amazonaws.com
+                - codepipeline.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Path: "/"
+      Policies:
+        - PolicyName: Admin
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "*"
+                Resource:
+                  - "*"
 
   Lambda2EmptyBucketBeforeDestroying:
     Type: "AWS::Lambda::Function"
@@ -115,9 +134,9 @@ Resources:
               response_data = {}
               cfnresponse.send(event, context, cfnresponse.SUCCESS, response_data)
             except Exception as e:
-                print(e)
-                response_data['Data'] = str(e)
-                cfnresponse.send(event, context, cfnresponse.FAILED, response_data)
+              print(e)
+              response_data['Data'] = str(e)
+              cfnresponse.send(event, context, cfnresponse.FAILED, response_data)
                 
             return {
                 'statusCode': 200,
@@ -139,7 +158,7 @@ Resources:
         Type: S3
       Name: infrastructure-deployment
       PipelineType: V2
-      RoleArn: !Ref CFNRoleARN
+      RoleArn: !GetAtt CFNRole2CreateResources
       Stages:
         - Name: Source
           Actions:
@@ -168,7 +187,7 @@ Resources:
               Configuration:
                 ActionMode: CHANGE_SET_REPLACE
                 ChangeSetName: pipeline-changeset
-                RoleArn: !Ref CodePipelineRoleARN
+                RoleArn: !Ref CFNRole2CreateResources
                 StackName: !Ref InfrastructureDeploymentStackName
                 TemplatePath: !Join [ "::", [ SourceArtifact, !Ref SourceArtifactCode ] ]
               InputArtifacts:
