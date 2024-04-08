@@ -24,6 +24,11 @@ Parameters:
     Type: String
     Default: AWS-CFN-Infra-Role
     Description: Role that Cloudformation assumes when creating resources on AWS.
+  
+  Lambda2S3RoleARN:
+    Type: String
+    Default: AWS-Lambda-S3-Role
+    Description: Role that Cloudformation assumes when creating resources on AWS.
 
   Lambda2DeleteS3FilesName:
     Type: String
@@ -47,6 +52,7 @@ Resources:
   LambdaRole2Connect2S3:
     Type: AWS::IAM::Role
     Properties:
+      RoleName: !Ref Lambda2S3RoleARN
       AssumeRolePolicyDocument:
         Version: '2012-10-17'
         Statement:
@@ -64,9 +70,10 @@ Resources:
             Statement:
               - Effect: Allow
                 Action:
-                  - "s3:*"
+                  - s3:*
                 Resource:
-                  - !GetAtt S3BucketToStoreCFN.Arn
+                  - !Sub arn:aws:s3:::${S3BucketToStoreCFN}
+                  - !Sub arn:aws:s3:::${S3BucketToStoreCFN}/*
               - Effect: Allow
                 Action:
                   - "logs:CreateLogGroup"
@@ -154,7 +161,7 @@ Resources:
     Type: AWS::CodePipeline::Pipeline
     Properties:
       ArtifactStore:
-        Location: !GetAtt S3BucketToStoreCFN.Arn
+        Location: !Ref S3BucketToStoreCFN
         Type: S3
       Name: infrastructure-deployment
       PipelineType: V2
