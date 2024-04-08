@@ -24,6 +24,6 @@ jobs:
       - name: Deploy to AWS CloudFormation
         uses: aws-actions/aws-cloudformation-github-deploy@v1
         with:
-          name: MyStack
+          name: cicd-pipeline-stack
           template: pipeline-cfn.yaml
           capabilities: CAPABILITY_NAMED_IAM
