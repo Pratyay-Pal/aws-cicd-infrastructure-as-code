@@ -14,7 +14,7 @@ jobs:
         with:
           repository: '${{ github.actor }}/${{ github.event.repository.name }}'
 
-      - name: secret key check in
+      - name: AWS Configure
         uses: aws-actions/configure-aws-credentials@v1
         with:          
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -25,4 +25,4 @@ jobs:
         uses: aws-actions/aws-cloudformation-github-deploy@v1
         with:
           name: MyStack
-          template: myStack.yaml
+          template: pipeline-cfn.yaml
