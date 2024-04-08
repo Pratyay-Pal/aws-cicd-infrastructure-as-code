@@ -22,8 +22,13 @@ Parameters:
 
   CFNRoleARN:
     Type: String
-    Default: AWS-CFN-AdminRole
+    Default: AWS-CFN-Infra-Role
     Description: Role that Cloudformation assumes when creating resources on AWS.
+
+  Lambda2DeleteS3FilesName:
+    Type: String
+    Default: Lambda2DeleteS3Files
+    Description: Name of Lambda which deletes files in S3 before bucket deletion.
   
   InfrastructureDeploymentStackName:
     Type: String
@@ -61,7 +66,7 @@ Resources:
                 Action:
                   - "s3:*"
                 Resource:
-                  - !Sub arn:aws:s3:::${SourceArtifactBucket}
+                  - !GetAtt S3BucketToStoreCFN.Arn
               - Effect: Allow
                 Action:
                   - "logs:CreateLogGroup"
@@ -98,12 +103,10 @@ Resources:
   Lambda2EmptyBucketBeforeDestroying:
     Type: "AWS::Lambda::Function"
     Properties:
+      FunctionName: !Ref Lambda2DeleteS3FilesName
       Runtime: "python3.12"
       Timeout: 60
-      Role: 
-        Fn::GetAtt:
-          - "LambdaRole2Connect2S3"
-          - "Arn"
+      Role: !GetAtt LambdaRole2Connect2S3.Arn
       Handler: "index.lambda_handler"
       Code: 
         ZipFile: |
@@ -113,35 +116,32 @@ Resources:
           import cfnresponse
 
           s3 = boto3.client('s3')
+          response_data = {}
           def lambda_handler(event, context):
-            print("Event : "+str(event))
-            bucket_name=event['ResourceProperties']['bucket_name']
-            try:
-              if event['RequestType'] == 'Delete':                
-                allObjs = s3.list_object_versions(Bucket=bucket_name)
-                for objVer in allObjs.get('Versions', []):
-                    s3.delete_object(
-                        Bucket=bucket_name,
-                        Key=objVer['Key'],
-                        VersionId=objVer['VersionId']
-                    )                  
-                for objDelMrkr in allObjs.get('DeleteMarkers', []):
-                    s3.delete_object(
-                        Bucket=bucket_name,
-                        Key=objDelMrkr['Key'],
-                        VersionId=objDelMrkr['VersionId']
-                    )
-              response_data = {}
-              cfnresponse.send(event, context, cfnresponse.SUCCESS, response_data)
-            except Exception as e:
-              print(e)
-              response_data['Data'] = str(e)
-              cfnresponse.send(event, context, cfnresponse.FAILED, response_data)
-                
-            return {
-                'statusCode': 200,
-                'body': json.dumps('All objects deleted')
-            }
+              print("Event : "+str(event))
+              bucket_name=event['ResourceProperties']['bucket_name']
+              try:
+                  if event['RequestType'] == 'Delete':                
+                      allObjs = s3.list_object_versions(Bucket=bucket_name)
+                      for objVer in allObjs.get('Versions', []):
+                          s3.delete_object(
+                              Bucket=bucket_name,
+                              Key=objVer['Key'],
+                              VersionId=objVer['VersionId']
+                          )                  
+                      for objDelMrkr in allObjs.get('DeleteMarkers', []):
+                          s3.delete_object(
+                              Bucket=bucket_name,
+                              Key=objDelMrkr['Key'],
+                              VersionId=objDelMrkr['VersionId']
+                          )
+                  print("Execution succesfull!")
+                  cfnresponse.send(event, context, cfnresponse.SUCCESS, response_data)
+              except Exception as e:
+                  print("Execution failed...")
+                  print(str(e))
+                  response_data['Data'] = str(e)
+                  cfnresponse.send(event, context, cfnresponse.FAILED, response_data)
   
   LambdaCustomResource:
     Type: Custom::LambdaCustomResource
@@ -154,11 +154,11 @@ Resources:
     Type: AWS::CodePipeline::Pipeline
     Properties:
       ArtifactStore:
-        Location: !Ref S3BucketToStoreCFN
+        Location: !GetAtt S3BucketToStoreCFN.Arn
         Type: S3
       Name: infrastructure-deployment
       PipelineType: V2
-      RoleArn: !GetAtt CFNRole2CreateResources
+      RoleArn: !GetAtt CFNRole2CreateResources.Arn
       Stages:
         - Name: Source
           Actions:
@@ -187,7 +187,7 @@ Resources:
               Configuration:
                 ActionMode: CHANGE_SET_REPLACE
                 ChangeSetName: pipeline-changeset
-                RoleArn: !Ref CFNRole2CreateResources
+                RoleArn: !GetAtt CFNRole2CreateResources.Arn
                 StackName: !Ref InfrastructureDeploymentStackName
                 TemplatePath: !Join [ "::", [ SourceArtifact, !Ref SourceArtifactCode ] ]
               InputArtifacts:
