@@ -27,7 +27,7 @@ Parameters:
   
   Lambda2S3RoleARN:
     Type: String
-    Default: AWS-Lambda-S3-Role-new
+    Default: AWS-Lambda-S3-Role
     Description: Role that Cloudformation assumes when creating resources on AWS.
 
   Lambda2DeleteS3FilesName:
