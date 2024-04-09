@@ -210,7 +210,7 @@ Resources:
             Action: 
               - s3:PutObject
             Resource: 
-              - !Join [ '', [ !GetAtt S3BucketToStoreArtifacts.Arn, '/CloudtrailEventsLogs/', '/*' ] ]
+              - !Join [ '', [ !GetAtt S3BucketToStoreArtifacts.Arn, '/AWSLogs/', !Ref 'AWS::AccountId', '/*' ] ]
             Condition: 
               StringEquals:
                 s3:x-amz-acl: bucket-owner-full-control
