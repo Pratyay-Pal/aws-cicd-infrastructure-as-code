@@ -4,6 +4,8 @@
 
 #Author: Pratyay Pal [https://github.com/Pratyay-Pal]
 
+#Reference Doc-> Combine Pipeline-Eventbridge-Cloudtrail-S3 Events: https://docs.aws.amazon.com/codepipeline/latest/userguide/create-cloudtrail-S3-source-cfn.html
+
 #Change values in Parameter section only. Leave the rest as it is.
 Parameters:
   #Overridden in github-actions.yml by S3_Bucket_Name. If you need to change it, change it there
@@ -47,10 +49,17 @@ Parameters:
     Default: lambda-to-delete-S3-files
     Description: Name of Lambda which deletes files in S3 before bucket deletion.
 
+  #Event Bridge Rule which listens to Cloudtrail S3 Put events
   EventBridgeRuleName:
     Type: String
     Default: EB-Execute-Pipeline-From-S3-Put
     Description: Name of Event bridge Rule which triggers CICD Pipeline on S3 PUT.
+
+  #Name of the CICD Pipeline
+  CICDInfraName:
+    Type: String
+    Default: cicd-pipeline-infra-deployment
+    Description: Name of the CICD Pipeline which does stack deployment.
 
   #Necessary Roles
   CFNRoleName:
@@ -178,6 +187,34 @@ Resources:
                 Action: codepipeline:StartPipelineExecution
                 Resource: !Join [ '', [ 'arn:aws:codepipeline:', !Ref 'AWS::Region', ':', !Ref 'AWS::AccountId', ':', !Ref InfrastructureDeployment ] ]
 
+  #S3 Buccket Policy For Cloudtrail Logging
+  CloudTrail2TrackBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref S3BucketToStoreArtifacts
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - cloudtrail.amazonaws.com
+            Action: 
+              - s3:GetBucketAcl
+            Resource: 
+              - !GetAtt S3BucketToStoreArtifacts.Arn
+          - Effect: Allow
+            Principal:
+              Service:
+                - cloudtrail.amazonaws.com
+            Action: 
+              - s3:PutObject
+            Resource: 
+              - !Join [ '', [ !GetAtt S3BucketToStoreArtifacts.Arn, '/CloudtrailEventsLogs/', '/*' ] ]
+            Condition: 
+              StringEquals:
+                s3:x-amz-acl: bucket-owner-full-control
+
 #END ROLES
 
 #LAMBDA
@@ -251,22 +288,41 @@ Resources:
           eventName:
             - CopyObject
             - PutObject
-            - CompleteMultipartUpload
           requestParameters:
             bucketName:
               - !Ref S3BucketToStoreCFN
             key:
               - !Ref SourceArtifact
       Name: !Ref EventBridgeRuleName
-      RoleArn: String
-      State: String
       Targets:
         - Arn:
-            !Join [ '', [ 'arn:aws:codepipeline:', !Ref 'AWS::Region', ':', !Ref 'AWS::AccountId', ':', !Ref AppPipeline ] ]
+            !Join [ '', [ 'arn:aws:codepipeline:', !Ref 'AWS::Region', ':', !Ref 'AWS::AccountId', ':', !Ref CICDInfraName ] ]
           RoleArn: !GetAtt EB2PipelineRole.Arn
           Id: codepipeline-AppPipeline
 
 ###END EVENTBRIDGE
+
+###CLOUDTRAIL
+
+  AwsCloudTrail:
+    DependsOn:
+      - CloudTrail2TrackBucketPolicy
+    Type: AWS::CloudTrail::Trail
+    Properties:
+      TrailName: S3-Put-Event-Logging
+      S3BucketName: !Ref S3BucketToStoreArtifacts
+      EventSelectors:
+        - DataResources:
+          - Type: AWS::S3::Object
+            Values:
+              - !Join [ '', [ !GetAtt S3BucketToStoreCFN.Arn, '/', !Ref SourceArtifact ] ]
+          ReadWriteType: WriteOnly
+          IncludeManagementEvents: false
+      IncludeGlobalServiceEvents: true
+      IsLogging: true
+    
+
+###END CLOUDTRAIL
 
 ###CICD PIPELINE
 
@@ -276,7 +332,7 @@ Resources:
       ArtifactStore:
         Location: !Ref S3BucketToStoreArtifacts
         Type: S3
-      Name: infrastructure-deployment
+      Name: !Ref CICDInfraName
       PipelineType: V2
       RoleArn: !GetAtt CFNRole2CreateResources.Arn
       Stages:
