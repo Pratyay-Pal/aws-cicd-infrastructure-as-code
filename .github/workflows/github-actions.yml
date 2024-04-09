@@ -8,9 +8,10 @@ on:
 #EDIT ONLY THE ENV VARS. LEAVE THE REST AS IT IS
 env:
   S3_Bucket_Name: aws-infra-as-code-cfn-store
-  Infrastructure_Stack_Zip_File: infrastructure-cfn.zip
-  Infrastructure_Stack_Yaml_File: infrastructure-cfn.yaml
-  Infrastructure_Stack_Name: infrastructure-stack
+  Infrastructure_Stack_Zip_File: web-server-cfn.zip
+  Infrastructure_Stack_Yaml_File: web-server-cfn.yaml
+  Infrastructure_Stack_Name: web-server-stack
+  CICD_Pipeline_Stack_Name: pipeline-cfn.yaml
 
 jobs:
   Explore-GitHub-Actions:
@@ -33,7 +34,7 @@ jobs:
         uses: aws-actions/aws-cloudformation-github-deploy@v1
         with:
           name: cicd-pipeline-stack
-          template: pipeline-cfn.yaml
+          template: ${{ env.CICD_Pipeline_Stack_Name }}
           capabilities: CAPABILITY_NAMED_IAM
           no-fail-on-empty-changeset: "1"
           parameter-overrides: >-
@@ -43,9 +44,6 @@ jobs:
             SourceArtifactCode=${{ env.Infrastructure_Stack_Yaml_File }},
             InfrastructureDeploymentStackName=${{ env.Infrastructure_Stack_Name }}
 
-      - name: Push 
+      - name: Push Infrastructure file to S3
         run: |
-          curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" 
-          unzip awscliv2.zip
-          sudo ./aws/install
-          aws s3api put-object --bucket $S3_Bucket_Name --key dir-1/my_images.tar.bz2
+          aws s3api put-object --bucket $S3_Bucket_Name --key $Infrastructure_Stack_Zip_File
