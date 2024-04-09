@@ -1,3 +1,8 @@
+#This code is just for reference. This Python file is not exactly required for the deployments.
+#The code you see here is present in the pipeline-cfn.yaml as a ZIP
+
+#Author: Pratyay Pal [https://github.com/Pratyay-Pal]
+
 import json
 import boto3
 import cfnresponse

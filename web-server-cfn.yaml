@@ -1,5 +1,9 @@
+#####THIS IS THE CFN WHICH GETS DEPLOYED THROUGH THE CICD PIPELINE. YOU CAN USE YOUR OWN CFN TO DEPLOY STACKS IF NEEDED
+
 ### Install httpd and launch a web server in EC2 using CFN Init
 ### Uses Default VPC and Subnets
+
+#Author: Pratyay Pal [https://github.com/Pratyay-Pal]
 
 Resources:
   cfnDemoEc2:

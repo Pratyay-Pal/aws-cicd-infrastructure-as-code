@@ -1,5 +1,9 @@
+###This is the Workflow file. This is triggered automatically on Master merge.
+
+#Author: Pratyay Pal [https://github.com/Pratyay-Pal]
+
 name: Push Image to ECR
-run-name: ${{ github.actor }} started workflow
+run-name: ${{ github.actor }} started workflow for ${{ github.event.repository.name }}
 on:
   push:
     branches:
@@ -7,9 +11,13 @@ on:
 
 #EDIT ONLY THE ENV VARS. LEAVE THE REST AS IT IS
 env:
-  S3_Bucket_Name: aws-infra-as-code-cfn-store
-  Infrastructure_Stack_Zip_File: web-server-cfn.zip
-  Infrastructure_Stack_Yaml_File: web-server-cfn.yaml
+  #S3 Bucket which will contain the ZIP of the Infrastrucure CFN
+  #Artifacts created by the CICD Pipeline will also be stored here
+  S3_Bucket_Name: aws-artifacts-and-cfn-store
+  #Change this in case your file has a different name
+  Infrastructure_Stack_Zip_File: web-server-cfn.zip 
+  #Change this in case your zip has a different name
+  Infrastructure_Stack_Yaml_File: web-server-cfn.yaml 
   Infrastructure_Stack_Name: web-server-stack
   CICD_Pipeline_Stack_Name: pipeline-cfn.yaml
 
@@ -46,5 +54,5 @@ jobs:
 
       - name: Push Infrastructure CFN to S3
         run: |
-          zip $Infrastructure_Stack_Zip_File InfrastructureCFN/$Infrastructure_Stack_Yaml_File
+          zip $Infrastructure_Stack_Zip_File $Infrastructure_Stack_Yaml_File
           aws s3api put-object --bucket $S3_Bucket_Name --key $Infrastructure_Stack_Zip_File --body $Infrastructure_Stack_Zip_File
