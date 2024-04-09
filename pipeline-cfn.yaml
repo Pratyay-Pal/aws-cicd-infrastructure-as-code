@@ -1,49 +1,63 @@
+###This is the CFN to create the CICD Pipeline which will in turn deploy the actual infrastruture.
+#If this file is changed, the CICD Stack in AWS will be changed through change-sets. Otherwise the update will make no change
+#The change is triggered by Github itself through workflows
+
+#Author: Pratyay Pal [https://github.com/Pratyay-Pal]
+
 #Change values in Parameter section only. Leave the rest as it is.
 Parameters:
   #Overridden in github-actions.yml by S3_Bucket_Name. If you need to change it, change it there
+  #Artifact store for Codepipeline. Codepipeline will generate artifacts for the subsequent stages which are stored here.
   ArtifactStoreBucket:
     Type: String
     Default: aws-infra-as-code-cfn-store
-    Description: Artifact store for Codepipeline.
+    Description: Artifact store for Codepipeline. 
   
   #Overridden in github-actions.yml by S3_Bucket_Name. If you need to change it, change it there
+  #Bucket where Source Artifact for Codepipeline is stored. This is where the CFN for your stack will go to. Github actions will auomatically place the ZIP here.
   SourceArtifactBucket:
     Type: String
     Default: aws-infra-as-code-cfn-store
     Description: Bucket where Source Artifact for Codepipeline is stored.
   
   #Overridden in github-actions.yml by Infrastructure_Stack_Zip_File. If you need to change it, change it there
+  #Source Artifact for Codepipeline. Github actions will auomatically ZIP the Infrastructure CFN.
   SourceArtifact:
     Type: String
     Default: infrastructure-cfn.zip
     Description: Source Artifact for Codepipeline. Must be ZIP.
 
   #Overridden in github-actions.yml by Infrastructure_Stack_Yaml_File. If you need to change it, change it there
+  #Source Artifact Code for Codepipeline. Github actions will auomatically ZIP the Infrastructure CFN.
   SourceArtifactCode:
     Type: String
     Default: infrastructure-cfn.yaml
     Description: Infrastruture as code. Must be YAML/JSON.
 
+  #Necessary Roles
   CFNRoleARN:
     Type: String
     Default: AWS-CFN-Infra-Role
     Description: Role that Cloudformation assumes when creating resources on AWS.
   
+  #Necessary Roles
   Lambda2S3RoleARN:
     Type: String
     Default: AWS-Lambda-S3-Role
     Description: Role that Cloudformation assumes when creating resources on AWS.
 
+  #Name of Lambda which will delete files from S3
   Lambda2DeleteS3FilesName:
     Type: String
     Default: lambda-to-delete-S3-files
     Description: Name of Lambda which deletes files in S3 before bucket deletion.
   
   #Overridden in github-actions.yml by Infrastructure_Stack_Name. If you need to change it, change it there
+  #Name of the stack in which your CFN will be deployed to
   InfrastructureDeploymentStackName:
     Type: String
     Default: infrastructure-stack
-    Description: Name of stack which will be responsible for Infrastructure Deployment.
+    Description: Name of stack of the Infrastructure.
 
 Resources:
   S3BucketToStoreCFN:
