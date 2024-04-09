@@ -4,6 +4,14 @@ on:
   push:
     branches:
       - 'master'
+
+#EDIT ONLY THE ENV VARS. LEAVE THE REST AS IT IS
+env:
+  S3_Bucket_Name: aws-infra-as-code-cfn-store
+  Infrastructure_Stack_Zip_File: infrastructure-cfn.zip
+  Infrastructure_Stack_Yaml_File: infrastructure-cfn.yaml
+  Infrastructure_Stack_Name: infrastructure-stack
+
 jobs:
   Explore-GitHub-Actions:
     name: Github Actions
@@ -27,3 +35,17 @@ jobs:
           name: cicd-pipeline-stack
           template: pipeline-cfn.yaml
           capabilities: CAPABILITY_NAMED_IAM
+          no-fail-on-empty-changeset: "1"
+          parameter-overrides: >-
+            ArtifactStoreBucket=$S3_Bucket_Name,
+            SourceArtifactBucket=$S3_Bucket_Name,
+            SourceArtifact=$Infrastructure_Stack_Zip_File,
+            SourceArtifactCode=$Infrastructure_Stack_Yaml_File,
+            InfrastructureDeploymentStackName=$Infrastructure_Stack_Name
+
+      - name: Push 
+        run: |
+          curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" 
+          unzip awscliv2.zip
+          sudo ./aws/install
+          aws s3api put-object --bucket $S3_Bucket_Name --key dir-1/my_images.tar.bz2
