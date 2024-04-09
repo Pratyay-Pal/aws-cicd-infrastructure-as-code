@@ -1,24 +1,24 @@
 #Change values in Parameter section only. Leave the rest as it is.
 Parameters:
-  #Overridden in github-actions by S3_Bucket_Name
+  #Overridden in github-actions.yml by S3_Bucket_Name. If you need to change it, change it there
   ArtifactStoreBucket:
     Type: String
     Default: aws-infra-as-code-cfn-store
     Description: Artifact store for Codepipeline.
   
-  #Overridden in github-actions by S3_Bucket_Name
+  #Overridden in github-actions.yml by S3_Bucket_Name. If you need to change it, change it there
   SourceArtifactBucket:
     Type: String
     Default: aws-infra-as-code-cfn-store
     Description: Bucket where Source Artifact for Codepipeline is stored.
   
-  #Overridden in github-actions by Infrastructure_Stack_Zip_File
+  #Overridden in github-actions.yml by Infrastructure_Stack_Zip_File. If you need to change it, change it there
   SourceArtifact:
     Type: String
     Default: infrastructure-cfn.zip
     Description: Source Artifact for Codepipeline. Must be ZIP.
 
-  #Overridden in github-actions by Infrastructure_Stack_Yaml_File
+  #Overridden in github-actions.yml by Infrastructure_Stack_Yaml_File. If you need to change it, change it there
   SourceArtifactCode:
     Type: String
     Default: infrastructure-cfn.yaml
@@ -36,10 +36,10 @@ Parameters:
 
   Lambda2DeleteS3FilesName:
     Type: String
-    Default: Lambda2DeleteS3Files
+    Default: lambda-to-delete-S3-files
     Description: Name of Lambda which deletes files in S3 before bucket deletion.
   
-  #Overridden in github-actions by Infrastructure_Stack_Name
+  #Overridden in github-actions.yml by Infrastructure_Stack_Name. If you need to change it, change it there
   InfrastructureDeploymentStackName:
     Type: String
     Default: infrastructure-stack
