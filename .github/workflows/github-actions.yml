@@ -44,6 +44,7 @@ jobs:
             SourceArtifactCode=${{ env.Infrastructure_Stack_Yaml_File }},
             InfrastructureDeploymentStackName=${{ env.Infrastructure_Stack_Name }}
 
-      - name: Push Infrastructure file to S3
+      - name: Push Infrastructure CFN to S3
         run: |
-          aws s3api put-object --bucket $S3_Bucket_Name --key $Infrastructure_Stack_Zip_File
+          zip $Infrastructure_Stack_Zip_File InfrastructureCFN/$Infrastructure_Stack_Yaml_File
+          aws s3api put-object --bucket $S3_Bucket_Name --key $Infrastructure_Stack_Zip_File --body $Infrastructure_Stack_Zip_File
