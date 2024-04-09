@@ -56,4 +56,4 @@ jobs:
       - name: Push Infrastructure CFN to S3
         run: |
           zip $Infrastructure_Stack_Zip_File $Infrastructure_Stack_Yaml_File
-          aws s3api put-object --bucket $S3_Bucket_Name --key $Infrastructure_Stack_Zip_File --body $Infrastructure_Stack_Zip_File
+          aws s3api put-object --bucket $S3_Bucket_Name_For_Infra_CFN --key $Infrastructure_Stack_Zip_File --body $Infrastructure_Stack_Zip_File
