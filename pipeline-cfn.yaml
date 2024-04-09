@@ -10,14 +10,14 @@ Parameters:
   #Artifact store for Codepipeline. Codepipeline will generate artifacts for the subsequent stages which are stored here.
   ArtifactStoreBucket:
     Type: String
-    Default: aws-infra-as-code-cfn-store
+    Default: aws-cicd-artifacts-store
     Description: Artifact store for Codepipeline. 
   
   #Overridden in github-actions.yml by S3_Bucket_Name. If you need to change it, change it there
   #Bucket where Source Artifact for Codepipeline is stored. This is where the CFN for your stack will go to. Github actions will auomatically place the ZIP here.
   SourceArtifactBucket:
     Type: String
-    Default: aws-infra-as-code-cfn-store
+    Default: aws-cfn-infra-store
     Description: Bucket where Source Artifact for Codepipeline is stored.
   
   #Overridden in github-actions.yml by Infrastructure_Stack_Zip_File. If you need to change it, change it there
@@ -33,24 +33,6 @@ Parameters:
     Type: String
     Default: infrastructure-cfn.yaml
     Description: Infrastruture as code. Must be YAML/JSON.
-
-  #Necessary Roles
-  CFNRoleARN:
-    Type: String
-    Default: AWS-CFN-Infra-Role
-    Description: Role that Cloudformation assumes when creating resources on AWS.
-  
-  #Necessary Roles
-  Lambda2S3RoleARN:
-    Type: String
-    Default: AWS-Lambda-S3-Role
-    Description: Role that Cloudformation assumes when creating resources on AWS.
-
-  #Name of Lambda which will delete files from S3
-  Lambda2DeleteS3FilesName:
-    Type: String
-    Default: lambda-to-delete-S3-files
-    Description: Name of Lambda which deletes files in S3 before bucket deletion.
   
   #Overridden in github-actions.yml by Infrastructure_Stack_Name. If you need to change it, change it there
   #Name of the stack in which your CFN will be deployed to
@@ -59,19 +41,65 @@ Parameters:
     Default: infrastructure-stack
     Description: Name of stack of the Infrastructure.
 
+  #Name of Lambda which will delete files from S3
+  Lambda2DeleteS3FilesName:
+    Type: String
+    Default: lambda-to-delete-S3-files
+    Description: Name of Lambda which deletes files in S3 before bucket deletion.
+
+  EventBridgeRuleName:
+    Type: String
+    Default: EB-Execute-Pipeline-From-S3-Put
+    Description: Name of Event bridge Rule which triggers CICD Pipeline on S3 PUT.
+
+  #Necessary Roles
+  CFNRoleName:
+    Type: String
+    Default: AWS-CFN-Infra-Role
+    Description: Role that Cloudformation assumes when creating resources on AWS.
+  
+  Lambda2S3RoleName:
+    Type: String
+    Default: AWS-Lambda-S3-Role
+    Description: Role that Cloudformation assumes when creating resources on AWS.
+
+  EB2PipeLineRoleName:
+    Type: String
+    Default: Eventbridge-pipeline-Role
+    Description: Role that Cloudformation assumes when creating resources on AWS.
+
 Resources:
+
+###BUCKETS
+
   S3BucketToStoreCFN:
     Type: AWS::S3::Bucket
     Properties:
       BucketName: !Ref SourceArtifactBucket
       VersioningConfiguration:
         Status: Enabled
+      NotificationConfiguration:
+        EventBridgeConfiguration:
+          EventBridgeEnabled: true
+    DeletionPolicy: Retain
+  
+  S3BucketToStoreArtifacts:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Ref ArtifactStoreBucket
+      VersioningConfiguration:
+        Status: Enabled
     DeletionPolicy: Delete
 
+###END BUCKETS
+
+#ROLES
+
+  #Role used by Lambda to connect to S3
   LambdaRole2Connect2S3:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Ref Lambda2S3RoleARN
+      RoleName: !Ref Lambda2S3RoleName
       AssumeRolePolicyDocument:
         Version: '2012-10-17'
         Statement:
@@ -83,7 +111,7 @@ Resources:
               - sts:AssumeRole
       Path: "/"
       Policies:
-        - PolicyName: Lambda2S3
+        - PolicyName: lambda-s3-artifact-bucket
           PolicyDocument:
             Version: '2012-10-17'
             Statement:
@@ -91,8 +119,8 @@ Resources:
                 Action:
                   - s3:*
                 Resource:
-                  - !Sub arn:aws:s3:::${S3BucketToStoreCFN}
-                  - !Sub arn:aws:s3:::${S3BucketToStoreCFN}/*
+                  - !Sub arn:aws:s3:::${S3BucketToStoreArtifacts}
+                  - !Sub arn:aws:s3:::${S3BucketToStoreArtifacts}/*
               - Effect: Allow
                 Action:
                   - "logs:CreateLogGroup"
@@ -100,10 +128,11 @@ Resources:
                   - "logs:PutLogEvents"
                 Resource: "*"
 
+  #Role used by CFN to create everything
   CFNRole2CreateResources:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Ref CFNRoleARN
+      RoleName: !Ref CFNRoleName
       AssumeRolePolicyDocument:
         Version: '2012-10-17'
         Statement:
@@ -125,6 +154,33 @@ Resources:
                   - "*"
                 Resource:
                   - "*"
+  
+  #Role used by Event bridge to trigger pipeline
+  EB2PipelineRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Ref EB2PipeLineRoleName
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - events.amazonaws.com
+            Action: sts:AssumeRole
+      Path: "/"
+      Policies:
+        - PolicyName: eb-pipeline-execution
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action: codepipeline:StartPipelineExecution
+                Resource: !Join [ '', [ 'arn:aws:codepipeline:', !Ref 'AWS::Region', ':', !Ref 'AWS::AccountId', ':', !Ref InfrastructureDeployment ] ]
+
+#END ROLES
+
+#LAMBDA
 
   Lambda2EmptyBucketBeforeDestroying:
     Type: "AWS::Lambda::Function"
@@ -173,14 +229,52 @@ Resources:
     Type: Custom::LambdaCustomResource
     Properties:
       ServiceToken: !GetAtt Lambda2EmptyBucketBeforeDestroying.Arn
-      bucket_name: !Ref S3BucketToStoreCFN ###THIS IS NEEDED TO CREATE DEPENDENCY BETWEEN DELETION LAMBDA(Lambda2EmptyBucketBeforeDestroying) AND S3 BUCKET
+      bucket_name: !Ref S3BucketToStoreArtifacts ###THIS IS NEEDED TO CREATE DEPENDENCY BETWEEN DELETION LAMBDA(Lambda2EmptyBucketBeforeDestroying) AND S3 BUCKET
       ### IF THIS IS NOT PRESENT CFN WILL TRY TO DESTROY THE S3 BEFORE IT IS EMPTIED
+
+###END LAMBDA
+
+###EVENTBRIDGE
+
+  EventBridgeRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Description: Trigger Codepipeline on S3 change
+      EventPattern:
+        source:
+          - aws.s3
+        detail-type:
+          - 'AWS API Call via CloudTrail'
+        detail:
+          eventSource:
+            - s3.amazonaws.com
+          eventName:
+            - CopyObject
+            - PutObject
+            - CompleteMultipartUpload
+          requestParameters:
+            bucketName:
+              - !Ref S3BucketToStoreCFN
+            key:
+              - !Ref SourceArtifact
+      Name: !Ref EventBridgeRuleName
+      RoleArn: String
+      State: String
+      Targets:
+        - Arn:
+            !Join [ '', [ 'arn:aws:codepipeline:', !Ref 'AWS::Region', ':', !Ref 'AWS::AccountId', ':', !Ref AppPipeline ] ]
+          RoleArn: !GetAtt EB2PipelineRole.Arn
+          Id: codepipeline-AppPipeline
+
+###END EVENTBRIDGE
+
+###CICD PIPELINE
 
   InfrastructureDeployment:
     Type: AWS::CodePipeline::Pipeline
     Properties:
       ArtifactStore:
-        Location: !Ref S3BucketToStoreCFN
+        Location: !Ref S3BucketToStoreArtifacts
         Type: S3
       Name: infrastructure-deployment
       PipelineType: V2
@@ -231,3 +325,5 @@ Resources:
                 StackName: !Ref InfrastructureDeploymentStackName
               InputArtifacts:
                 - Name: SourceArtifact
+
+###END CICD PIPELINE

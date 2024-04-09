@@ -13,7 +13,8 @@ on:
 env:
   #S3 Bucket which will contain the ZIP of the Infrastrucure CFN
   #Artifacts created by the CICD Pipeline will also be stored here
-  S3_Bucket_Name: aws-artifacts-and-cfn-store
+  S3_Bucket_Name_For_Infra_CFN: aws-cfn-infra-store
+  S3_Bucket_Name_For_CICD_Artifacts: aws-cicd-artifacts-store
   #Change this in case your file has a different name
   Infrastructure_Stack_Zip_File: web-server-cfn.zip 
   #Change this in case your zip has a different name
@@ -46,8 +47,8 @@ jobs:
           capabilities: CAPABILITY_NAMED_IAM
           no-fail-on-empty-changeset: "1"
           parameter-overrides: >-
-            ArtifactStoreBucket=${{ env.S3_Bucket_Name }},
-            SourceArtifactBucket=${{ env.S3_Bucket_Name }},
+            ArtifactStoreBucket=${{ env.S3_Bucket_Name_For_CICD_Artifacts }},
+            SourceArtifactBucket=${{ env.S3_Bucket_Name_For_Infra_CFN }},
             SourceArtifact=${{ env.Infrastructure_Stack_Zip_File }},
             SourceArtifactCode=${{ env.Infrastructure_Stack_Yaml_File }},
             InfrastructureDeploymentStackName=${{ env.Infrastructure_Stack_Name }}
