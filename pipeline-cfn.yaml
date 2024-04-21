@@ -70,12 +70,12 @@ Parameters:
   Lambda2S3RoleName:
     Type: String
     Default: AWS-Lambda-S3-Role
-    Description: Role that Cloudformation assumes when creating resources on AWS.
+    Description: Role that Lambda uses to connect to S3.
 
   EB2PipeLineRoleName:
     Type: String
     Default: Eventbridge-pipeline-Role
-    Description: Role that Cloudformation assumes when creating resources on AWS.
+    Description: Role that EventBridge uses to trigger Code Pipeline.
 
 Resources:
 
