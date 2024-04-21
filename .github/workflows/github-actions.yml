@@ -53,6 +53,7 @@ jobs:
             SourceArtifactCode=${{ env.Infrastructure_Stack_Yaml_File }},
             InfrastructureDeploymentStackName=${{ env.Infrastructure_Stack_Name }}
 
+        #IDEALLY THIS STEP AND THE APP CFN SHOULD BE IN A TOTALLY SEPARATE REPOSITORY
       - name: Push Infrastructure CFN to S3
         run: |
           zip $Infrastructure_Stack_Zip_File $Infrastructure_Stack_Yaml_File
