@@ -2,7 +2,7 @@
 
 This project creates **CI/CD Pipeline** through AWS CloudFormation. This pipeline is then responsible for deployment of other **Infrastructure Stacks**, thus bringing the entire *AWS Infrastructure starting from the Application and its Deployment to code*. This can be deployed anywhere with absolutely no prerequisite resources to be configured. All you need is an AWS environment, and account to let GitHub and CFN carry out operations on your behalf.
 
-> **Article on Mediumn** : https://medium.com/@pratyayp1999/manage-ci-cd-infrastructure-as-code-f6b504eb87e5
+> **Article on Medium** : https://medium.com/@pratyayp1999/manage-ci-cd-infrastructure-as-code-f6b504eb87e5
 
 ## Architecture
 ![Image](Architecture/createinfra.drawio.png?raw=true)
