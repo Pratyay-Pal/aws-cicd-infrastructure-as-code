@@ -1,4 +1,4 @@
-<mxfile host="app.diagrams.net" modified="2024-04-09T16:32:14.714Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36" etag="659OHhvmizJJB2JRf1AI" version="24.2.2" type="device">
+<mxfile host="app.diagrams.net" modified="2024-04-21T13:41:30.360Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36" etag="H8WV948Gf37wybpH9LIx" version="24.2.3" type="device">
   <diagram name="Page-1" id="gfBPRSnI_GUrFYi8_Cs0">
     <mxGraphModel dx="2412" dy="810" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
@@ -8,7 +8,7 @@
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="i_BdbYn4SVfui-p-9MxM-1" value="&lt;b&gt;pipeline-cfn&lt;/b&gt;&lt;div&gt;&lt;b&gt;.yaml&lt;/b&gt;&lt;/div&gt;" style="whiteSpace=wrap;html=1;shape=mxgraph.basic.document" parent="1" vertex="1">
-          <mxGeometry x="-480" y="120" width="80" height="80" as="geometry" />
+          <mxGeometry x="-481" y="120" width="80" height="80" as="geometry" />
         </mxCell>
         <mxCell id="i_BdbYn4SVfui-p-9MxM-16" value="&lt;font style=&quot;font-size: 12px;&quot;&gt;&lt;b&gt;Cloudformation creates&lt;br&gt;CICD pipeline &amp;amp; necessary&lt;br&gt;resources&lt;/b&gt;&lt;/font&gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="i_BdbYn4SVfui-p-9MxM-2" target="i_BdbYn4SVfui-p-9MxM-7" edge="1">
           <mxGeometry relative="1" as="geometry" />

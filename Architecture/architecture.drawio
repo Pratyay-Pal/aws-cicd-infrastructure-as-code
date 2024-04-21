@@ -1,4 +1,4 @@
-<mxfile host="app.diagrams.net" modified="2024-04-09T16:32:11.651Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36" etag="SvhTwxhAMkDXK8cIpRNW" version="24.2.2" type="device">
+<mxfile host="app.diagrams.net" modified="2024-04-21T12:38:17.061Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36" etag="mEk4RSckVQQQAFOy6xXZ" version="24.2.3" type="device">
   <diagram name="Page-1" id="jx741WVj_RJFd6O5MR8i">
     <mxGraphModel dx="2412" dy="810" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
@@ -31,13 +31,13 @@
         <mxCell id="x_3VOnPhglZwVYIp-Xem-12" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;&lt;b&gt;Github Workflow&lt;/b&gt;&lt;/font&gt;" style="verticalLabelPosition=bottom;aspect=fixed;html=1;shape=mxgraph.salesforce.workflow;labelPosition=center;align=center;verticalAlign=top;" parent="1" vertex="1">
           <mxGeometry x="-120" y="120" width="80" height="80" as="geometry" />
         </mxCell>
-        <mxCell id="DUiVhxo9N7wB14-M10A0-2" value="" style="shape=ext;double=1;rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+        <mxCell id="DUiVhxo9N7wB14-M10A0-2" value="" style="shape=ext;double=1;rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
           <mxGeometry x="-480" y="320" width="630" height="320" as="geometry" />
         </mxCell>
-        <mxCell id="DUiVhxo9N7wB14-M10A0-3" value="&lt;b&gt;Code Pipeline&lt;br&gt;cicd-pipeline-infra-deployment&lt;/b&gt;" style="outlineConnect=0;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;shape=mxgraph.aws3.codepipeline;fillColor=#759C3E;gradientColor=none;" vertex="1" parent="1">
+        <mxCell id="DUiVhxo9N7wB14-M10A0-3" value="&lt;b&gt;Code Pipeline&lt;br&gt;cicd-pipeline-infra-deployment&lt;/b&gt;" style="outlineConnect=0;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;shape=mxgraph.aws3.codepipeline;fillColor=#759C3E;gradientColor=none;" parent="1" vertex="1">
           <mxGeometry x="-205" y="350" width="70" height="80" as="geometry" />
         </mxCell>
-        <mxCell id="DUiVhxo9N7wB14-M10A0-4" value="&lt;font style=&quot;font-size: 12px;&quot;&gt;&lt;b&gt;Eventbridge Triggers when it finds S3 PutObject API call in Cloudtrail API Logs&lt;/b&gt;&lt;/font&gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="x_3VOnPhglZwVYIp-Xem-1" target="DUiVhxo9N7wB14-M10A0-3">
+        <mxCell id="DUiVhxo9N7wB14-M10A0-4" value="&lt;font style=&quot;font-size: 12px;&quot;&gt;&lt;b&gt;Eventbridge Triggers when it finds S3 PutObject API call in Cloudtrail API Logs&lt;/b&gt;&lt;/font&gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;entryPerimeter=0;" parent="1" source="x_3VOnPhglZwVYIp-Xem-1" target="DUiVhxo9N7wB14-M10A0-3" edge="1">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
               <mxPoint x="320" y="270" />
@@ -45,19 +45,19 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="DUiVhxo9N7wB14-M10A0-6" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;&lt;b&gt;web-server-cfn.zip&lt;/b&gt;&lt;/font&gt;" style="shape=image;verticalAlign=top;verticalLabelPosition=bottom;labelBackgroundColor=#ffffff;imageAspect=0;aspect=fixed;image=https://cdn4.iconfinder.com/data/icons/file-extension-names-vol-8/512/2-128.png;html=1;" vertex="1" parent="1">
+        <mxCell id="DUiVhxo9N7wB14-M10A0-6" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;&lt;b&gt;web-server-cfn.zip&lt;br&gt;From S3 Bucket&lt;/b&gt;&lt;/font&gt;" style="shape=image;verticalAlign=top;verticalLabelPosition=bottom;labelBackgroundColor=#ffffff;imageAspect=0;aspect=fixed;image=https://cdn4.iconfinder.com/data/icons/file-extension-names-vol-8/512/2-128.png;html=1;" parent="1" vertex="1">
           <mxGeometry x="-450" y="500" width="80" height="80" as="geometry" />
         </mxCell>
-        <mxCell id="DUiVhxo9N7wB14-M10A0-10" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="DUiVhxo9N7wB14-M10A0-7" target="DUiVhxo9N7wB14-M10A0-9">
+        <mxCell id="DUiVhxo9N7wB14-M10A0-10" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="DUiVhxo9N7wB14-M10A0-7" target="DUiVhxo9N7wB14-M10A0-9" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="DUiVhxo9N7wB14-M10A0-7" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;&lt;b&gt;CloudFormation&lt;/b&gt;&lt;/font&gt;&lt;div&gt;&lt;font style=&quot;font-size: 12px;&quot;&gt;&lt;b style=&quot;&quot;&gt;Calculate and execute change-sets&lt;/b&gt;&lt;/font&gt;&lt;/div&gt;" style="outlineConnect=0;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;shape=mxgraph.aws3.stack_aws_cloudformation;fillColor=#759C3E;gradientColor=none;" vertex="1" parent="1">
+        <mxCell id="DUiVhxo9N7wB14-M10A0-7" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;&lt;b&gt;CloudFormation&lt;/b&gt;&lt;/font&gt;&lt;div&gt;&lt;font style=&quot;font-size: 12px;&quot;&gt;&lt;b style=&quot;&quot;&gt;Calculate and execute change-sets&lt;/b&gt;&lt;/font&gt;&lt;/div&gt;" style="outlineConnect=0;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;shape=mxgraph.aws3.stack_aws_cloudformation;fillColor=#759C3E;gradientColor=none;" parent="1" vertex="1">
           <mxGeometry x="-210" y="500" width="80" height="80" as="geometry" />
         </mxCell>
-        <mxCell id="DUiVhxo9N7wB14-M10A0-8" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="DUiVhxo9N7wB14-M10A0-6" target="DUiVhxo9N7wB14-M10A0-7">
+        <mxCell id="DUiVhxo9N7wB14-M10A0-8" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;" parent="1" source="DUiVhxo9N7wB14-M10A0-6" target="DUiVhxo9N7wB14-M10A0-7" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="DUiVhxo9N7wB14-M10A0-9" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;&lt;b&gt;WebServer on&amp;nbsp;&lt;/b&gt;&lt;/font&gt;&lt;div&gt;&lt;font style=&quot;font-size: 14px;&quot;&gt;&lt;b&gt;Amazon EC2&lt;/b&gt;&lt;/font&gt;&lt;/div&gt;" style="outlineConnect=0;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;shape=mxgraph.aws3.ec2;fillColor=#F58534;gradientColor=none;" vertex="1" parent="1">
+        <mxCell id="DUiVhxo9N7wB14-M10A0-9" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;&lt;b&gt;WebServer on&amp;nbsp;&lt;/b&gt;&lt;/font&gt;&lt;div&gt;&lt;font style=&quot;font-size: 14px;&quot;&gt;&lt;b&gt;Amazon EC2&lt;/b&gt;&lt;/font&gt;&lt;/div&gt;" style="outlineConnect=0;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;shape=mxgraph.aws3.ec2;fillColor=#F58534;gradientColor=none;" parent="1" vertex="1">
           <mxGeometry x="30" y="500" width="80" height="80" as="geometry" />
         </mxCell>
       </root>
