@@ -2,6 +2,14 @@
 
 This project creates **CI/CD Pipeline** through AWS CloudFormation. This pipeline is then responsible for deployment of other **Infrastructure Stacks**, thus bringing the entire *AWS Infrastructure starting from the Application and its Deployment to code*. This can be deployed anywhere with absolutely no prerequisite resources to be configured. All you need is an AWS environment, and account to let GitHub and CFN carry out operations on your behalf.
 
+## Architecture
+![Image](Architecture/createinfra.drawio.png?raw=true)
+The above architecture diagram shows the workflow of how the CI/CD Infrastructure is deployed.
+
+![Image](Architecture/architecture.drawio.png?raw=true)
+The above architecture diagram shows the workflow of how the Application CFN is deployed into CloudFormation Stacks using the Code Pipeline created above.
+
+
 ### Resources
 
 The following AWS resources are created:
@@ -18,5 +26,7 @@ The following AWS resources are created:
 |lambda-to-delete-S3-files|Lambda|Lambda which deletes files in S3 before bucket deletion.|
 |infrastructure-stack|CFN Stack|Name of stack of the Infrastructure (Not the CI/CD one).|
 |S3-Put-Event-Logging|CloudTrail|Cloudtrail which listens to S3 Put Object API|
+
+
 
 > **Note:** Do **NOT** delete the **CI/CD Pipeline stack** before deleting the **infrastructure-stack**. If AWS-CFN-Infra-Role gets deleted CFN will not be able to delete the **infrastructure-stack**.
